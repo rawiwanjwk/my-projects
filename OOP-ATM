@@ -1,0 +1,45 @@
+#ATM OOP
+
+import random
+
+class ATM:
+    def __init__(self, username, bank, amount):
+        self.username = username
+        self.bank = bank
+        self.amount = amount
+
+    def __str__(self):
+        return f"{self.username} uses {self.bank} and has {self.amount} THB in an account."
+
+    def check_balance(self):
+        print(f"Balance: {self.amount} THB")
+
+    def deposit(self, saving):
+        self.amount += saving
+        print(f"Deposit {saving} THB successfully!")
+        print(f"Balance: {self.amount} THB")
+
+    def withdraw(self, withdraw):
+        self.amount -= withdraw
+        print(f"Withdraw {withdraw} THB successfully!")
+        print(f"Balance: {self.amount} THB")
+    
+    def paybill(self, whichbill ,total):
+        self.amount -= total
+        print(f"Your {whichbill} bill {total} THB has paid successfully!")
+        print(f"Balance: {self.amount} THB")
+
+    def top_up(self, service, total):
+        self.amount -= total
+        print(f"Your {service} service {total} THB has topped-up successfully!")
+        print(f"Balance: {self.amount} THB")
+
+    def transfer(self, transfer_to, amount):
+        self.amount -= amount
+        print(f"Transfer {amount} THB was transferred to {transfer_to} already.")
+        print(f"Balance: {self.amount} THB")
+
+    def get_otp(self):
+        number = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+        result = random.sample(number, 6)
+        return f"your OTP is {result}"
