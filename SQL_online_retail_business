@@ -1,0 +1,42 @@
+CREATE TABLE rfm_results AS
+
+SELECT
+	*,
+	CASE
+	WHEN R_Score = 5 AND F_Score = 5 AND M_Score = 5 THEN "Valued Customer"      	  -- ลูกค้าชั้นดี
+		WHEN R_Score = 5 AND F_Score <=2 THEN "New Customer"                          -- ลูกค้าใหม่ เพิ่งมาซื้อไม่กี่ครั้ง
+		WHEN R_Score <=2 AND F_Score = 5 AND M_Score >=4 THEN "Lost Valued Customer"  -- เคยเป็นลูกค้าชั้นดี แค่ขาดการกลับมาซื้อซ้ำ
+		ELSE "General Customer"	
+	END AS Customer_Segment
+FROM
+	(
+	SELECT
+		Invoice,
+		CustomerID,
+		Description,
+		Date,
+		Country,
+		Recency,
+		NTILE(5) OVER(ORDER BY Recency DESC) AS R_Score,
+		Frequency,
+		NTILE(5) OVER(ORDER BY Frequency ASC) AS F_Score,
+		Monetary,
+		NTILE(5) OVER(ORDER BY Monetary ASC) AS M_Score
+	FROM
+		(
+		SELECT
+			Invoice,
+			CustomerID,
+			Description,
+			Date,
+			Country,
+			JULIANDAY("2011-12-10") - JULIANDAY(MAX(REPLACE(Date, "/", "-"))) AS Recency,
+			COUNT(DISTINCT Invoice) AS Frequency,
+			SUM(total) AS Monetary
+		FROM online_retail
+		WHERE CustomerID != "Unknown"
+		GROUP BY CustomerID
+		)
+	ORDER BY M_Score DESC, Monetary DESC
+	)
+ORDER BY Customer_Segment;
