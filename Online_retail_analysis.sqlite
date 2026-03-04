@@ -40,3 +40,4 @@ FROM
 	ORDER BY M_Score DESC, Monetary DESC
 	)
 ORDER BY Customer_Segment;
+
