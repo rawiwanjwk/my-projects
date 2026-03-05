@@ -1,6 +1,3 @@
-Hello, I am passionate in data analytics and this is a place I collect my projects in.
-I am learning in data analytics and data science, So It's new for me and I attempt to improve myself at this.
-For now I am looking for a job that related in data analytics fields.
-Thank you for visiting my GitHub. :)
+"Hello! I am a passionate Data Analytics enthusiast dedicated to uncovering insights through data. This GitHub repository serves as a portfolio of my journey and projects as I expand my expertise in Data Science and Analytics. I am continuously learning and striving to improve my technical skills. Currently, I am seeking opportunities to contribute as a Data Analyst. Thank you for visiting!"
 
 Portfolio in Notion: https://www.notion.so/Rawiwan-s-Portfolio-2b7681ab4bc080c29393c1110157e49b
