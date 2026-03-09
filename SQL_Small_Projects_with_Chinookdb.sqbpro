@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?><sqlb_project><db path="D:/Software_SQL/chinook.db" readonly="0" foreign_keys="1" case_sensitive_like="0" temp_store="0" wal_autocheckpoint="1000" synchronous="2"/><attached/><window><main_tabs open="structure browser pragmas query" current="3"/></window><tab_structure><column_width id="0" width="300"/><column_width id="1" width="0"/><column_width id="2" width="100"/><column_width id="3" width="3952"/><column_width id="4" width="0"/><expanded_item id="0" parent="1"/><expanded_item id="1" parent="1"/><expanded_item id="2" parent="1"/><expanded_item id="3" parent="1"/></tab_structure><tab_browse><table title="invoices" custom_title="0" dock_id="3" table="4,8:maininvoices"/><dock_state state="000000ff00000000fd0000000100000002000003e1000002b6fc0100000003fb000000160064006f0063006b00420072006f00770073006500310100000000ffffffff0000000000000000fb000000160064006f0063006b00420072006f00770073006500320100000000ffffffff0000000000000000fb000000160064006f0063006b00420072006f00770073006500330100000000000003e10000011800ffffff000002580000000000000004000000040000000800000008fc00000000"/><default_encoding codec=""/><browse_table_settings><table schema="main" name="albums" show_row_id="0" encoding="" plot_x_axis="" unlock_view_pk="_rowid_" freeze_columns="0"><sort/><column_widths><column index="1" value="56"/><column index="2" value="300"/><column index="3" value="53"/></column_widths><filter_values/><conditional_formats/><row_id_formats/><display_formats/><hidden_columns/><plot_y_axes/><global_filter/></table><table schema="main" name="invoices" show_row_id="0" encoding="" plot_x_axis="" unlock_view_pk="_rowid_" freeze_columns="0"><sort/><column_widths><column index="1" value="62"/><column index="2" value="76"/><column index="3" value="156"/><column index="4" value="300"/><column index="5" value="156"/><column index="6" value="72"/><column index="7" value="117"/><column index="8" value="105"/><column index="9" value="46"/></column_widths><filter_values/><conditional_formats/><row_id_formats/><display_formats/><hidden_columns/><plot_y_axes/><global_filter/></table></browse_table_settings></tab_browse><tab_sql><sql name="Query 1.1">-- Use group_concat
+SELECT
+	art.ArtistId AS artistid,
+    art.name AS artist_name,
+	group_concat(alb.title, ', ') AS album_name,
+    COUNT(art.name) AS total_albums
+FROM artists AS art
+JOIN albums AS alb ON art.ArtistId = alb.ArtistId
+GROUP BY 1 
+HAVING total_albums &gt; 3
+ORDER BY 4 DESC;</sql><sql name="Query 1.2">-- Use subquery
+SELECT
+	art.ArtistId AS artistid,
+	art.name AS artist_name,
+	alb.Title AS album_name
+FROM artists AS art
+JOIN albums AS alb ON art.ArtistId = alb.ArtistId
+WHERE art.ArtistId IN
+(
+	SELECT
+		art.ArtistId AS artistid
+	FROM artists AS art
+	JOIN albums AS alb ON art.ArtistId = alb.ArtistId
+	GROUP BY 1 
+	HAVING COUNT(alb.Title) &gt; 3
+)
+ORDER BY artist_name, album_name;</sql><sql name="Query 2">SELECT * FROM(
+SELECT
+	art.name AS artist_name, --1
+    gen.name AS song_type, -- 2
+    COUNT(tra.TrackId) AS song_amount -- 3
+FROM artists AS art
+JOIN albums AS alb ON art.ArtistId = alb.ArtistId
+JOIN tracks As tra ON alb.albumid = tra.AlbumId
+JOIN genres AS gen ON tra.GenreId = gen.GenreId
+WHERE gen.name = 'Rock'
+GROUP BY art.ArtistId
+ORDER BY 3 DESC
+LIMIT 1)
+
+UNION ALL
+
+SELECT * FROM(
+SELECT
+	art.name AS artist_name, --1
+    gen.name AS song_type, -- 2
+    COUNT(tra.TrackId) AS song_amount -- 3
+FROM artists AS art
+JOIN albums AS alb ON art.ArtistId = alb.ArtistId
+JOIN tracks As tra ON alb.albumid = tra.AlbumId
+JOIN genres AS gen ON tra.GenreId = gen.GenreId
+WHERE gen.name = 'Pop'
+GROUP BY art.ArtistId
+ORDER BY 3 DESC
+LIMIT 1);</sql><sql name="Query 3">SELECT
+	*
+FROM 
+(
+SELECT
+	cus.firstname,
+	cus.Country,
+	SUM(inv.total) AS total_invoice
+FROM customers AS cus
+JOIN invoices AS inv ON cus.CustomerId = inv.CustomerId
+WHERE inv.InvoiceDate &gt; '2010-12-31'
+GROUP BY cus.firstname, cus.Country
+)
+WHERE total_invoice &gt; 20
+ORDER BY total_invoice DESC</sql><sql name="Query 4">SELECT
+	firstname,
+    lastname,
+    TRIM(LOWER(firstname||'.'|| SUBSTR(lastname,1,1))) || '@data.com' AS new_email
+FROM employees;</sql><sql name="Query 5.1">SELECT
+	cus.CustomerId,
+	cus.City,
+	cus.Country,
+	SUM(inv.total) AS total_invoice
+FROM customers AS cus
+JOIN invoices AS inv ON cus.CustomerId = inv.CustomerId
+GROUP BY cus.CustomerId, cus.City, cus.Country
+ORDER BY total_invoice DESC
+LIMIT 5</sql><sql name="Query 5.2">SELECT
+	cus.City,
+	cus.Country,
+	SUM(inv.total) AS total_invoice
+FROM customers AS cus
+JOIN invoices AS inv ON cus.CustomerId = inv.CustomerId
+GROUP BY cus.City, cus.Country
+ORDER BY total_invoice DESC
+LIMIT 5</sql><sql name="Query 6.1">WITH SumTotalSpending AS
+(SELECT
+	art.name AS artist_name,
+	SUM(invitems.Quantity * invitems.UnitPrice) AS sum_price
+FROM artists AS art
+JOIN albums AS alb ON art.ArtistId = alb.ArtistId
+JOIN tracks AS tra ON alb.AlbumId = tra.AlbumId
+JOIN invoice_items AS invitems ON tra.TrackId = invitems.TrackId
+GROUP BY art.name),
+
+AvgAllArtists AS
+(SELECT
+	ROUND(AVG(sum_price),2) AS avg_all_artists
+FROM SumTotalSpending)
+
+-- CROSS JOIN
+SELECT 
+	artist_name,
+	sum_price,
+	avg_all_artists
+FROM SumTotalSpending CROSS JOIN AvgAllArtists
+WHERE sum_price &gt; avg_all_artists
+ORDER BY sum_price DESC;
+
+-- Subquery
+/*SELECT
+	artist_name,
+	sum_price
+FROM SumTotalSpending
+WHERE sum_price &gt; (SELECT avg_all_artists FROM AvgAllArtists)
+ORDER BY sum_price DESC;*/
+</sql><sql name="Query 6.2">WITH SumTotalSpending AS
+(SELECT
+	art.name AS artist_name,
+	SUM(invitems.Quantity * invitems.UnitPrice) AS sum_price
+FROM artists AS art
+JOIN albums AS alb ON art.ArtistId = alb.ArtistId
+JOIN tracks AS tra ON alb.AlbumId = tra.AlbumId
+JOIN invoice_items AS invitems ON tra.TrackId = invitems.TrackId
+GROUP BY art.name),
+
+AvgAllArtists AS
+(SELECT
+	ROUND(AVG(sum_price),2) AS avg_all_artists
+FROM SumTotalSpending)
+
+SELECT
+	*,
+	CASE
+		WHEN sum_price &gt; avg_all_artists THEN 'Top Performer'
+		ELSE 'Standard'
+	END AS Segment
+FROM SumTotalSpending CROSS JOIN AvgAllArtists
+ORDER BY sum_price DESC;</sql><current_tab id="8"/></tab_sql></sqlb_project>
